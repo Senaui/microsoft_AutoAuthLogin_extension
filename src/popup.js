@@ -1,4 +1,5 @@
+import { alertTest } from "./lib";
 document.getElementById('myButton').addEventListener('click', () => {
-  alert('Button clicked!');
+  alertTest();
   // Example: Communicate with background script
 });
