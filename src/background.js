@@ -1,5 +1,5 @@
 import normalizeUrl from "normalize-url";
-import * as lib from "./lib.js";
+import {scheduleTOTPUpdate, generateTotp, getTOTPByKey} from "./lib.js";
 
 console.log('Background service worker loaded');
 
@@ -10,15 +10,12 @@ const urlRecords = [
     "https://login.microsoftonline.com//login"
 ];
 
-const secret = "lcll2d6xm7t2wvxd";
-
 const lastProcessedUrls = {};
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.status === "complete" && tab.url) {
         const normalized = normalizeUrl(tab.url);
         if (lastProcessedUrls[tabId] === normalized) {
-            // Already handled this URL for this tab, skip
             return;
         }
         lastProcessedUrls[tabId] = normalized; // Mark as processed
@@ -34,26 +31,21 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
             });
         }
     }
-
-
 });
-
-
-
 
 (async () => {
     console.log('Setting secret in background script');
-    await lib.setsecret(secret);
-    console.log('Secret set:');
+    
     // Schedule TOTP updates every 30 seconds
-    lib.scheduleTOTPUpdate(30, async () => {
-        const secret = await lib.getsecret();
+    scheduleTOTPUpdate(30, async () => {
+        const secret = await getTOTPByKey('example.com');
         if (secret) {
-            const totp = lib.generateTotp(secret);
+            const totp = generateTotp(secret['secret']);
             console.log('Generated TOTP:', totp);
+
             // Here you can send the TOTP to the content script or handle it as needed
         } else {
-            console.error('No secret found for TOTP generation');
+            console.log('No secret found for TOTP generation');
         }
     });
 })();
