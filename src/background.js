@@ -1,5 +1,5 @@
 import normalizeUrl from "normalize-url";
-import {scheduleTOTPUpdate, generateTotp, getTOTPByKey} from "./lib.js";
+import {scheduleTOTPUpdate, generateTotp, getTOTPByLabel} from "./lib.js";
 
 console.log('Background service worker loaded');
 
@@ -38,7 +38,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     
     // Schedule TOTP updates every 30 seconds
     scheduleTOTPUpdate(30, async () => {
-        const secret = await getTOTPByKey('example.com');
+        const secret = await getTOTPByLabel('example.com');
         if (secret) {
             const totp = generateTotp(secret['secret']);
             console.log('Generated TOTP:', totp);

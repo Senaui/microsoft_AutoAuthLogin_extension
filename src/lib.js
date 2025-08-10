@@ -31,24 +31,35 @@ export async function getItem(key) {
     });
 }
 
-export async function setTOTP(key, secret) {
+export async function setTOTP(label, secret) {
     console.log('Setting TOTP secret:', secret);
     return new Promise(async (resolve, reject) => {
-        const existingSecrets = await getItem('TOTP') || {};
-        existingSecrets[key] = secret;
-        await setItem('TOTP', existingSecrets);
+        const existingTOTPs = await getItem('TOTP');
+        existingTOTPs[label] = secret;
+        await setItem('TOTP', existingTOTPs);
         console.log('Secret added to storage');
         resolve();
     });
 }
 
-export async function getAllTOTP() {
-    return await getItem('TOTP');
+export async function removeTOTP(label) {
+    console.log('Removing TOTP secret for label:', label);
+    return new Promise(async (resolve, reject) => {
+        const existingTOTPs = await getItem('TOTP');
+        delete existingTOTPs[label];
+        await setItem('TOTP', existingTOTPs);
+        console.log('Secret removed from storage');
+        resolve();
+    });
 }
 
-export async function getTOTPByKey(key) {
-    const allSecrets = await getAllTOTP();
-    return allSecrets ? allSecrets[key] || null : null;
+export async function getAllTOTP() {
+    return await getItem('TOTP') ? getItem('TOTP') : {};
+}
+
+export async function getTOTPByLabel(label) {
+    const allTOTPs = await getAllTOTP();
+    return allTOTPs ? allTOTPs[label] || null : null;
 }
 
 export async function alertTest() {
